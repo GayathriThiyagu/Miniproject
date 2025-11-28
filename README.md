@@ -1,59 +1,296 @@
-## Title of the Project
-Small description about the project like one below
-The integration of a chatbot within a hostel booking system, aimed at streamlining the reservation process for students and improving the overall user experience.
+# Busify — Admin & Passenger Dashboards
 
-## About
-<!--Detailed Description about the project-->
-Tailored Chatbot for Hostel Booking System is a project designed to integrate a chatbot that leverages advanced natural language processing techniques to understand and respond to user queries to the hostel booking system. Traditional hostel booking processes are often time-consuming and involve manual searches and extensive communication with hostel staff. This project seeks to overcome these challenges by creating an easy-to-use chatbot interface that assists students in addressing inquiries.
+Lightweight React dashboards for a Busify-style app. This project includes:
 
-## Features
-<!--List the features of the project as shown below-->
-- Implements advance neural network method.
-- A framework based application for deployment purpose.
-- High scalability.
-- Less time complexity.
-- A specific scope of Chatbot response model, using json data format.
+- AdminDashboard — management UI with charts, SOS & Lost Items management.
+- PassengerDashboard — arriving buses, booking + QR generation, lost & found upload, live map (Leaflet).
+- Firebase (Firestore + Storage) as backend.
+- Chart.js (via react-chartjs-2) and Leaflet for charts & maps.
+- A shared `src/App.css` providing the design system (glass cards, bottom nav). Admin view uses the `.admin-dashboard` class to show an orange background theme.
+
+This README explains how to set up, run, and customize the project.
+
+---
+
+## Table of contents
+
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Project structure](#project-structure)
+- [Firebase setup & example code](#firebase-setup--example-code)
+- [Environment variables](#environment-variables)
+- [Styling & admin orange background](#styling--admin-orange-background)
+- [Firestore collections / expected schema](#firestore-collections--expected-schema)
+- [Security & rules guidance](#security--rules-guidance)
+- [Development notes & best practices](#development-notes--best-practices)
+- [Scripts](#scripts)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Requirements
-<!--List the requirements of the project as shown below-->
-* Operating System: Requires a 64-bit OS (Windows 10 or Ubuntu) for compatibility with deep learning frameworks.
-* Development Environment: Python 3.6 or later is necessary for coding the sign language detection system.
-* Deep Learning Frameworks: TensorFlow for model training, MediaPipe for hand gesture recognition.
-* Image Processing Libraries: OpenCV is essential for efficient image processing and real-time hand gesture recognition.
-* Version Control: Implementation of Git for collaborative development and effective code management.
-* IDE: Use of VSCode as the Integrated Development Environment for coding, debugging, and version control integration.
-* Additional Dependencies: Includes scikit-learn, TensorFlow (versions 2.4.1), TensorFlow GPU, OpenCV, and Mediapipe for deep learning tasks.
 
-## System Architecture
-<!--Embed the system architecture diagram as shown below-->
+- Node.js 16+ (LTS recommended)
+- npm or Yarn
+- A Firebase project with Firestore, Storage and Authentication enabled
 
-![Screenshot 2023-11-25 133637](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/a60c11f3-0a11-47fb-ac89-755d5f45c995)
+---
 
+## Quick start
 
-## Output
+1. Clone the repository
+   ```bash
+   git clone <repo-url>
+   cd <repo-folder>
+   ```
 
-<!--Embed the Output picture at respective places as shown below as shown below-->
-#### Output1 - Name of the output
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
 
-![Screenshot 2023-11-25 134037](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/8c2b6b5c-5ed2-4ec4-b18e-5b6625402c16)
+3. Add Firebase environment variables (see [Environment variables](#environment-variables))
 
-#### Output2 - Name of the output
-![Screenshot 2023-11-25 134253](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/5e05c981-05ca-4aaa-aea2-d918dcf25cb7)
+4. Create `src/firebase.js` (example below)
 
-Detection Accuracy: 96.7%
-Note: These metrics can be customized based on your actual performance evaluations.
+5. Start the dev server
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
 
+6. Open http://localhost:3000
 
-## Results and Impact
-<!--Give the results and impact as shown below-->
-The Sign Language Detection System enhances accessibility for individuals with hearing and speech impairments, providing a valuable tool for inclusive communication. The project's integration of computer vision and deep learning showcases its potential for intuitive and interactive human-computer interaction.
+---
 
-This project serves as a foundation for future developments in assistive technologies and contributes to creating a more inclusive and accessible digital environment.
+## Project structure (example)
 
-## Articles published / References
-1. N. S. Gupta, S. K. Rout, S. Barik, R. R. Kalangi, and B. Swampa, “Enhancing Heart Disease Prediction Accuracy Through Hybrid Machine Learning Methods ”, EAI Endorsed Trans IoT, vol. 10, Mar. 2024.
-2. A. A. BIN ZAINUDDIN, “Enhancing IoT Security: A Synergy of Machine Learning, Artificial Intelligence, and Blockchain”, Data Science Insights, vol. 2, no. 1, Feb. 2024.
+- src/
+  - components/
+    - AdminDashboard.jsx
+    - PassengerDashboard.jsx
+  - firebase.js
+  - App.css
+  - index.js
+- public/
+- package.json
 
+Notes:
+- `AdminDashboard.jsx` handles chart data, admin management actions (trigger SOS, resolve, delete lost items) and uses `chart.js`.
+- `PassengerDashboard.jsx` handles map loading (Leaflet), bookings and QR generation, lost item uploads, and camera access for scanning (decoding optional).
+- `App.css` contains shared styles and `.admin-dashboard` override.
 
+---
 
+## Firebase setup & example code
 
+Create a Firebase project in the Firebase Console and enable:
+
+- Firestore
+- Storage
+- Authentication (Email/password or providers you need)
+
+Example `src/firebase.js` (compat-style; adapt to modular SDK if preferred):
+
+```javascript name=src/firebase.js
+// src/firebase.js
+import firebase from "firebase/compat/app";
+import "firebase/compat/firestore";
+import "firebase/compat/storage";
+import "firebase/compat/auth";
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+export const firestore = firebase.firestore();
+export const storage = firebase.storage();
+export const auth = firebase.auth();
+export default firebase;
+```
+
+Important:
+- Use the Firebase Emulator Suite for local testing of rules and functions when possible.
+
+---
+
+## Environment variables
+
+Create a `.env.local` file at the project root (never commit secrets):
+
+```
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+```
+
+Restart the dev server after changing environment variables.
+
+---
+
+## Styling & admin orange background
+
+Shared UI styles live in `src/App.css`. To enable an orange themed admin background the AdminDashboard root container adds `admin-dashboard`:
+
+```jsx
+<div className="dashboard-bg admin-dashboard" style={{ paddingBottom: 130 }}>
+  ...
+</div>
+```
+
+Example CSS snippet (in `App.css`):
+
+```css
+.admin-dashboard {
+  background: linear-gradient(180deg, #ff8800 0%, #ffb86b 100%) !important;
+  color: #fff !important;
+}
+```
+
+Adjust colors and gradients in `App.css` to match branding.
+
+---
+
+## Firestore collections / expected schema
+
+The UI expects the following collection names and common fields (adapt as needed):
+
+- buses (docId = bus.id)
+  - number, route, arrival, departureTime, arrivalTime, status, location: { lat, lng }, stops: [], crowd
+- users
+  - name, email, phone, role: "admin" | "driver" | "passenger", createdAt, busNumber (for drivers)
+- bookings
+  - busId, busNumber, user, pickup, drop, busCode, createdAt
+- lost_items
+  - name, photo (url), busNumber, importance ("Low"|"Medium"|"High"), desc, user, timestamp
+- sos_alerts
+  - busNumber, message, createdBy, timestamp, resolved (boolean), resolvedAt
+- gps_locations (optional, used by live map)
+  - lat, lng, timestamp
+
+The code includes a `dateKeyFromRecord` helper which supports both Firestore `Timestamp` objects (with `.toDate()`) and ISO strings.
+
+---
+
+## Security & rules guidance (high-level)
+
+Do not rely on client validation for access control. Use Firestore security rules.
+
+Example (high-level, minimal):
+
+Firestore rules (conceptual — test and adapt):
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /buses/{bus} {
+      allow read: if request.auth != null; // limit to authenticated or public read as desired
+      allow write: if false; // only via admin or backend with service account
+    }
+    match /sos_alerts/{id} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if false;
+    }
+    match /lost_items/{id} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow update, delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    // ... users, bookings, gps_locations rules similar pattern
+  }
+}
+```
+
+Storage rules:
+- Only allow authenticated uploads.
+- Validate file size and content type where possible.
+- Consider storing images with restricted read and provide signed URLs if privacy is required.
+
+Use the Firebase Emulator to test rules locally.
+
+---
+
+## Development notes & best practices
+
+- Realtime listeners:
+  - Use `onSnapshot` for `gps_locations`, `lost_items` etc.
+  - Unsubscribe on component unmount to avoid memory leaks.
+
+- Timestamps:
+  - Prefer `firebase.firestore.FieldValue.serverTimestamp()` when writing time from clients if server time is required.
+
+- Map (Leaflet) integration:
+  - The PassengerDashboard dynamically loads Leaflet CSS/JS. Ensure the map container exists and is initialized after script load.
+
+- QR:
+  - QR generation uses external image API (`https://api.qrserver.com/v1/create-qr-code/?data=...`).
+  - QR scanning requires a decoding library (e.g., `jsQR`) to decode frames captured from `getUserMedia()`.
+
+- Charts:
+  - Include `import 'chart.js/auto'` once before using react-chartjs-2.
+  - Use `useMemo` for data/options to reduce re-renders.
+
+- Performance:
+  - Avoid fetching large collections at once in production — use pagination or server-side aggregation.
+  - Use batched writes or transactions when updating related documents.
+
+---
+
+## Scripts
+
+Common npm scripts (example in `package.json`):
+
+- `npm start` — Start development server
+- `npm run build` — Create production build
+- `npm test` — Run tests (if present)
+- `npm run lint` — Run linting (if configured)
+
+---
+
+## Troubleshooting
+
+- Map not showing: check console for leaflet load errors and ensure CSS loaded. Confirm map container size exists when map initializes.
+- Firestore permission errors: verify security rules and that your client is authenticated.
+- Storage upload issues: check CORS and Storage rules; validate file size and type.
+- Camera access denied: ensure the app is served over HTTPS (or localhost) and the browser permissions allow camera access.
+
+---
+
+## Contributing
+
+- Fork → create a branch → open a PR.
+- Keep changes scoped: styles, features, bugfixes in separate PRs.
+- Add or update tests if you introduce logic changes.
+- Use the Firebase Emulator Suite for testing rules and local Firestore/Storage.
+
+---
+
+## Example: quick local checklist
+
+1. Create Firebase project and enable Firestore, Storage, Auth.
+2. Add environment variables to `.env.local`.
+3. Add `src/firebase.js` (example above).
+4. Install deps (`npm install`).
+5. `npm start` and open `http://localhost:3000`.
+6. Optional: run Firebase Emulator.
+
+---
